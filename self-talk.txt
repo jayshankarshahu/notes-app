@@ -1,0 +1,30 @@
+DO THINGS IN THE ORDER THEY ARE WRITTEN
+
+Version 1
+
+- Everytime the home page appears it should fetch from sqlite 
+
+- The edit page should expect an id of the note as a parameter and should fetch the rest of the info from sqlite
+
+- If it's a new note it should send blank and it will insert and then keep updating the note
+
+- Implement debouncing for it
+ 
+- In the home page there should be 
+
+    - search option
+
+    - option to sort by either 
+    
+        - createdAt ( asc and desc ), 
+        - editedAt ( asc and desc ) [ default ]
+
+    - and also a pull down to refresh gesture
+
+Version 2
+
+- add tags in the notes
+
+- search using tags ( # ) and also add chips to filter using tags
+
+- add/remove/"mark as done" reminders on notes
