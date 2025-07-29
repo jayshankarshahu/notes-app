@@ -21,10 +21,12 @@ Version 1
 
     - and also a pull down to refresh gesture
 
+# should be ready ON OR BEFORE 1st AUGUST
+
 Version 2
 
 - add tags in the notes
 
 - search using tags ( # ) and also add chips to filter using tags
 
-- add/remove/"mark as done" reminders on notes
+- add/remove/"mark as done" reminders on notes 
