@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'storage.dart';
 
 class EditNotePage extends StatefulWidget {
-  final String note;
-  final Function onChange;
+  final int? noteId;
 
-  const EditNotePage({Key? key, required this.note, required this.onChange}) : super(key: key);
+  const EditNotePage({Key? key, this.noteId})
+    : super(key: key);
 
   @override
   State<EditNotePage> createState() => _EditNotePageState();
@@ -13,6 +14,7 @@ class EditNotePage extends StatefulWidget {
 class _EditNotePageState extends State<EditNotePage> {
   // Create a controller with some initial text
   late final TextEditingController _controller;
+  late final Map<String, dynamic> _currentNote;
 
   @override
   void dispose() {
@@ -21,9 +23,32 @@ class _EditNotePageState extends State<EditNotePage> {
     super.dispose();
   }
 
+  Future<Map<String, dynamic>?> _InitCurrentNote() async {
+
+    int noteId;
+
+    if (widget.noteId == null) {
+      noteId = await NotesDatabase.InsertEmptyNoteAndGetId();
+    } else {
+      noteId = widget.noteId!;
+    }
+
+    final note = await NotesDatabase.getOneNote(noteId);
+
+    if (note == null) {
+      //Do Something;
+      return null;
+    }
+
+    _currentNote = note;
+    _controller = TextEditingController(text: _currentNote['body']);
+
+    return note;
+  }
+
   @override
   void initState() {
-    _controller = TextEditingController(text: widget.note);
+    // _InitCurrentNote();
     super.initState();
   }
 
@@ -33,20 +58,41 @@ class _EditNotePageState extends State<EditNotePage> {
       appBar: AppBar(title: Text("Edit Note")),
       body: Padding(
         padding: EdgeInsets.all(16),
-        child: TextField(
-          minLines: null,
-          textAlignVertical: TextAlignVertical(y: -1),
-          maxLines: null,
-          autofocus: true,
-          expands: true,
-          controller: _controller,
-          decoration: InputDecoration(
-            border: OutlineInputBorder(),
-            labelText: "What's on your mind?",
-          ),
-          // Optional: Listen to changes if you want
-          onChanged: (value) {
-            widget.onChange(value);
+        child: FutureBuilder(
+          future: _InitCurrentNote(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // While the future is loading
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              // If the future completed with error
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              // If the future completed with no data
+              return Center(child: Text('No notes found.'));
+            } else {
+              return TextField(
+                minLines: null,
+                textAlignVertical: TextAlignVertical(y: -1),
+                maxLines: null,
+                autofocus: true,
+                expands: true,
+                controller: _controller,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: "What's on your mind?",
+                  alignLabelWithHint: true, // optional: helpful for multiline
+                ),
+                // Optional: Listen to changes if you want
+                onChanged: (value) {
+                  NotesDatabase.updateNote(
+                    _currentNote['id'],
+                    _currentNote['title'],
+                    value,
+                  );
+                },
+              );
+            }
           },
         ),
       ),

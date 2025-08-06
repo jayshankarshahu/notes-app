@@ -21,6 +21,8 @@ Version 1
 
     - and also a pull down to refresh gesture
 
+    - Editing notes should have undo redo button
+
 # should be ready ON OR BEFORE 1st AUGUST
 
 Version 2

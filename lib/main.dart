@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'storage.dart';
 import 'editnotes.dart';
+import 'theme.dart';
 
 void main() => runApp(NotesApp());
 
@@ -16,26 +18,19 @@ class NotesPage extends StatefulWidget {
 }
 
 class _NotesPageState extends State<NotesPage> {
-  // Some sample notes to display
-  List<String> notes = [
-    "Buy groceries again",
-    "Read Flutter docs",
-    "Finish project",
-    "Write test cases",
-    "Call Alice",
-    "Water plants",
-  ];
+  Future<List<Map<String, dynamic>>> notes = NotesDatabase.getAllNotes();
 
-  void _addNote(String newNote) {
+  Future<void> refreshPage() async {
     setState(() {
-      notes.add(newNote);
+      NotesDatabase.deleteEmpty();
+      notes = NotesDatabase.getAllNotes();
     });
   }
 
-  void _changeNote(int index, String updatedNote) {
-    setState(() {
-      notes[index] = updatedNote;
-    });
+  @override
+  void initState() {
+    NotesDatabase.deleteEmpty();
+    super.initState();
   }
 
   @override
@@ -44,37 +39,64 @@ class _NotesPageState extends State<NotesPage> {
       appBar: AppBar(title: Text('All Notes')),
       body: Padding(
         padding: EdgeInsets.all(8),
-        child: GridView.builder(
-          itemCount: notes.length,
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Two columns
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1.1,
-          ),
-          itemBuilder: (context, index) {
-            return Card(
-              color: Colors.amber[100],
-              child: GestureDetector(
-                onTap: () => {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EditNotePage(
-                        note: notes[index],
-                        onChange: (updatedNote) {
-                          _changeNote(index, updatedNote);
-                        },
-                      ),
-                    ),
+        child: FutureBuilder(
+          future: notes,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // While the future is loading
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              // If the future completed with error
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              // If the future completed with no data
+              return Center(child: Text('No notes found.'));
+            } else {
+              final notes = snapshot.data!;
+
+              return RefreshIndicator(
+                onRefresh: refreshPage,
+                child: GridView.builder(
+                  itemCount: notes.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2, // Two columns
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                    childAspectRatio: 1.1,
                   ),
-                },
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(notes[index], style: TextStyle(fontSize: 18)),
+                  itemBuilder: (context, index) {
+                    final currentNote = notes[index];
+
+                    return Card(
+                      color: Colors.amber[100],
+                      child: GestureDetector(
+                        onTap: () => {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) {
+                                return EditNotePage(
+                                  noteId: currentNote['id']
+                                );
+                              },
+                            ),
+                          ).then((_) {
+                            refreshPage();
+                          }),
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: Text(
+                            currentNote['body'],
+                            style: TextStyle(fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              ),
-            );
+              );
+            }
           },
         ),
       ),
@@ -84,18 +106,21 @@ class _NotesPageState extends State<NotesPage> {
             context,
             MaterialPageRoute(
               builder: (context) {
-                int noteId = notes.length;
-                notes.add('');
+                return EditNotePage();
+                // int noteId = notes.length;
+                // notes.add('');
 
-                return EditNotePage(
-                  note: '',
-                  onChange: (newNote) {
-                    _changeNote(noteId, newNote);
-                  },
-                );
+                // return EditNotePage(
+                //   note: '',
+                //   onChange: (newNote) {
+                //     _changeNote(noteId, newNote);
+                //   },
+                // );
               },
             ),
-          );
+          ).then((_) {
+            refreshPage();
+          });
         },
         child: Icon(Icons.add),
         tooltip: 'Add Note',

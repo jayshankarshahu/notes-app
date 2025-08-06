@@ -1,52 +1,124 @@
+import 'dart:io';
+
 import 'package:sqflite/sqflite.dart';
+
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 
 //keeping things static so that the function can be used globally across the app
 class NotesDatabase {
-
   static Database? _database;
 
   static Future<Database> get database async {
-    
-    if( _database != null ) {
+    return await _initDatabase();
+  }
+
+  static Future<Database> _initDatabase() async {
+    if (_database != null) {
       return _database!;
     }
 
-    _database = await openDatabase('notes.db' , 
-    onCreate: ( db , version ) {
-      db.execute("""
-          CREATE TABLE IF NOT EXISTS notes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            title TEXT,
-            body TEXT,
-            createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-            modifiedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
-          );
-      """);
-      db.execute("""
-          PRAGMA recursive_triggers = OFF;
+    if( Platform.isWindows || Platform.isLinux || Platform.isMacOS ) {
 
-          CREATE TRIGGER update_modifiedAt
-          AFTER UPDATE ON notes
-          FOR EACH ROW
-          BEGIN
-              UPDATE notes
-              SET modifiedAt = strftime('%s', 'now')
-              WHERE id = OLD.id;
-          END;
+      databaseFactory = databaseFactoryFfi;
 
-          """);
-    });
+    }
+
+    _database = await openDatabase(
+      'notes.db',
+      version: 1,
+      onCreate: (db, version) {
+        db.execute("""
+            CREATE TABLE IF NOT EXISTS notes (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              title TEXT,
+              body TEXT,
+              createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+              editedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+            );
+        """);
+        db.execute("""
+            PRAGMA recursive_triggers = OFF;
+
+            CREATE TRIGGER update_editedAt
+            AFTER UPDATE ON notes
+            FOR EACH ROW
+            BEGIN
+                UPDATE notes
+                SET editedAt = strftime('%s', 'now')
+                WHERE id = OLD.id;
+            END;
+
+            """);
+      },
+    );
 
     return _database!;
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllNotes() async {
+    final db = await _initDatabase();
+
+    return await db.query('notes');
+  }
+
+  static Future<int> InsertEmptyNoteAndGetId( ) async {
+    final db = await _initDatabase();
+
+    final queryResult = await db.insert(
+      'notes',
+      { 
+        'title' : '',
+        'body' : ''
+      }
+    );
+
+    return queryResult;
+  }
+
+  static void deleteEmpty( ) async {
+
+    final db = await _initDatabase();
+    db.delete('notes' , where: 'title = "" and body = ""');
 
   }
 
+  static Future<Map<String, dynamic>?> getOneNote( id ) async {
+    final db = await _initDatabase();
 
+    final queryResult = await db.query(
+      'notes',
+      where: 'id = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+
+    return queryResult.firstOrNull;
+  }
+
+  static updateNote(int noteId, String? newTitle, String? newBody) async {
+    if (newTitle == null && newBody == null) {
+      return false;
+    }
+
+    final db = await _initDatabase();
+    Map<String, String> updateValues = Map();
+
+    if (newTitle != null) {
+      updateValues['title'] = newTitle;
+    }
+
+    if (newBody != null) {
+      updateValues['body'] = newBody;
+    }
+
+    final updatedValue = await db.update(
+      'notes',
+      updateValues,
+      where: 'id = ?',
+      whereArgs: [noteId],
+    );
+
+    return updatedValue == 1;
+  }
 }
-
-// var db = await openDatabase('notes.db' , {
-//   onCreate: () {
-
-//   }
-// });
