@@ -4,8 +4,7 @@ import 'storage.dart';
 class EditNotePage extends StatefulWidget {
   final int? noteId;
 
-  const EditNotePage({Key? key, this.noteId})
-    : super(key: key);
+  const EditNotePage({Key? key, this.noteId}) : super(key: key);
 
   @override
   State<EditNotePage> createState() => _EditNotePageState();
@@ -13,18 +12,19 @@ class EditNotePage extends StatefulWidget {
 
 class _EditNotePageState extends State<EditNotePage> {
   // Create a controller with some initial text
-  late final TextEditingController _controller;
-  late final Map<String, dynamic> _currentNote;
+  late final TextEditingController _bodyController;
+  late final TextEditingController _titleController;
+  late Map<String, dynamic> _currentNote;
 
   @override
   void dispose() {
     // Dispose the controller when the widget is removed
-    _controller.dispose();
+    _titleController.dispose();
+    _bodyController.dispose();
     super.dispose();
   }
 
   Future<Map<String, dynamic>?> _InitCurrentNote() async {
-
     int noteId;
 
     if (widget.noteId == null) {
@@ -40,16 +40,12 @@ class _EditNotePageState extends State<EditNotePage> {
       return null;
     }
 
-    _currentNote = note;
-    _controller = TextEditingController(text: _currentNote['body']);
+
+    _currentNote = Map.from(note);
+    _bodyController = TextEditingController(text: _currentNote['body']);
+    _titleController = TextEditingController(text: _currentNote['title']);
 
     return note;
-  }
-
-  @override
-  void initState() {
-    // _InitCurrentNote();
-    super.initState();
   }
 
   @override
@@ -71,26 +67,53 @@ class _EditNotePageState extends State<EditNotePage> {
               // If the future completed with no data
               return Center(child: Text('No notes found.'));
             } else {
-              return TextField(
-                minLines: null,
-                textAlignVertical: TextAlignVertical(y: -1),
-                maxLines: null,
-                autofocus: true,
-                expands: true,
-                controller: _controller,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: "What's on your mind?",
-                  alignLabelWithHint: true, // optional: helpful for multiline
-                ),
-                // Optional: Listen to changes if you want
-                onChanged: (value) {
-                  NotesDatabase.updateNote(
-                    _currentNote['id'],
-                    _currentNote['title'],
-                    value,
-                  );
-                },
+              return Column(
+                children: [
+                  TextField(
+                    minLines: null,
+                    autocorrect: false,
+                    controller: _titleController,
+                    maxLines: 1,
+                    decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "What is it about?",
+                    ),                    
+                    onChanged: (value) {
+
+                      NotesDatabase.updateNote(
+                        _currentNote['id'],
+                        value,
+                        null
+                      );
+
+                    },
+                  ),
+
+                  Expanded(
+                    child: TextField(
+                      minLines: null,
+                      textAlignVertical: TextAlignVertical(y: -1),
+                      maxLines: null,
+                      autofocus: true,
+                      expands: true,
+                      controller: _bodyController,
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: "What's on your mind?",
+                        alignLabelWithHint: true,
+                      ),
+                      onChanged: (value) {
+
+                        NotesDatabase.updateNote(
+                          _currentNote['id'],
+                          null,
+                          value,
+                        );
+                        
+                      },
+                    ),
+                  ),
+                ],
               );
             }
           },
