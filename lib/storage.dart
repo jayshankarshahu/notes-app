@@ -1,8 +1,12 @@
 import 'dart:io';
-
 import 'package:sqflite/sqflite.dart';
-
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+late SharedPreferences prefs;
+
+const cacheTypeTitle = 'title';
+const cacheTypeBody = 'body';
 
 
 //keeping things static so that the function can be used globally across the app
@@ -121,4 +125,53 @@ class NotesDatabase {
 
     return updatedValue == 1;
   }
+}
+
+
+void saveNoteInCache( int id , String type , String value ) async {
+
+  final key = "draft-${id.toString()}-$type";
+
+  prefs.setString(key, value);
+
+}
+
+Future<void> readCacheAndUpdateStorage() async {
+
+  for (String key in prefs.getKeys()) {
+
+    if (key.startsWith('draft-')) {
+      
+      final keyElements = key.split('-');
+
+      if( keyElements.length != 3 ) {
+        continue;
+      }
+
+      final id = int.tryParse(keyElements[1]);
+
+      if( id == null ) {
+        continue;
+      }
+
+      final type = keyElements[2];
+
+      final value = prefs.getString(key);
+
+      if( type == cacheTypeTitle ) {
+
+        await NotesDatabase.updateNote(id, value , null);
+        await prefs.remove(key);
+
+      } else if ( type == cacheTypeBody ) {
+
+        await NotesDatabase.updateNote(id, null , value);
+        await prefs.remove(key);
+        
+      }
+
+    }
+
+  }
+
 }

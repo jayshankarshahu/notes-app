@@ -2,13 +2,29 @@ import 'package:flutter/material.dart';
 import 'storage.dart';
 import 'editnotes.dart';
 import 'theme.dart';
+import 'dart:async';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() => runApp(NotesApp());
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();  
+
+  prefs = await SharedPreferences.getInstance(); //assign only if null
+
+  Timer.periodic(Duration(seconds: 10), (timer) {
+    readCacheAndUpdateStorage();
+  });
+  
+  runApp(NotesApp());
+}
 
 class NotesApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: NotesPage(), debugShowCheckedModeBanner: false);
+    return MaterialApp(
+      home: NotesPage(),
+      debugShowCheckedModeBanner: false
+    );
   }
 }
 
@@ -21,10 +37,14 @@ class _NotesPageState extends State<NotesPage> {
   Future<List<Map<String, dynamic>>> notes = NotesDatabase.getAllNotes();
 
   Future<void> refreshPage() async {
+    
+    await readCacheAndUpdateStorage();
+    
     setState(() {
       NotesDatabase.deleteEmpty();
       notes = NotesDatabase.getAllNotes();
     });
+
   }
 
   @override
@@ -75,9 +95,7 @@ class _NotesPageState extends State<NotesPage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) {
-                                return EditNotePage(
-                                  noteId: currentNote['id']
-                                );
+                                return EditNotePage(noteId: currentNote['id']);
                               },
                             ),
                           ).then((_) {

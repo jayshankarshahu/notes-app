@@ -40,7 +40,6 @@ class _EditNotePageState extends State<EditNotePage> {
       return null;
     }
 
-
     _currentNote = Map.from(note);
     _bodyController = TextEditingController(text: _currentNote['body']);
     _titleController = TextEditingController(text: _currentNote['title']);
@@ -80,11 +79,7 @@ class _EditNotePageState extends State<EditNotePage> {
                     ),                    
                     onChanged: (value) {
 
-                      NotesDatabase.updateNote(
-                        _currentNote['id'],
-                        value,
-                        null
-                      );
+                      saveNoteInCache(_currentNote['id'], cacheTypeTitle, value);
 
                     },
                   ),
@@ -104,11 +99,7 @@ class _EditNotePageState extends State<EditNotePage> {
                       ),
                       onChanged: (value) {
 
-                        NotesDatabase.updateNote(
-                          _currentNote['id'],
-                          null,
-                          value,
-                        );
+                        saveNoteInCache(_currentNote['id'], cacheTypeBody, value);
                         
                       },
                     ),
