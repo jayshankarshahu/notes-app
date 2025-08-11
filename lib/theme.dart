@@ -15,7 +15,7 @@ const Color lightError = Color(0xFFEF4444);
 /// ===== Dark Theme Colors =====
 const Color darkBackground = Color(0xFF121212);
 const Color darkSurface = Color(0xFF1E1E1E);
-const Color darkPrimaryText = Color(0xFFF5F5F5);
+const Color darkPrimaryText = Color.fromARGB(255, 255, 255, 255);
 const Color darkSecondaryText = Color(0xFFA1A1A1);
 const Color darkPrimaryAccent = Color(0xFF60A5FA);
 const Color darkSecondaryAccent = Color(0xFFFBBF24);
@@ -75,6 +75,7 @@ class AppThemes {
         side: BorderSide(color: lightBorder, width: 1),
       ),
     ),
+    disabledColor: lightSecondaryText
   );
 
   static ThemeData darkTheme = ThemeData(
@@ -118,7 +119,7 @@ class AppThemes {
       ),
     ),
     cardTheme: CardThemeData(
-      color: const Color(0xFF1A1A1A), // Slightly lighter than background
+      color: darkBackground, // Slightly lighter than background
       // elevation: 2,
       margin: const EdgeInsets.all(8),
       shape: RoundedRectangleBorder(
@@ -126,5 +127,6 @@ class AppThemes {
         side: const BorderSide(color: darkBorder, width: 1),
       ),
     ),
+    disabledColor: darkSecondaryText
   );
 }

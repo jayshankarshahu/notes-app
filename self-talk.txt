@@ -12,14 +12,14 @@ Version 1
  
 - In the home page there should be 
 
-    - search option
+    - search option (done)
 
-    - option to sort by either 
+    - option to sort by either (done)
     
         - createdAt ( asc and desc ), 
         - editedAt ( asc and desc ) [ default ]
 
-    - and also a pull down to refresh gesture
+    - and also a pull down to refresh gesture ( done )
 
     - Editing notes should have undo redo button
 

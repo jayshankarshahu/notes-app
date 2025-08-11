@@ -1,6 +1,5 @@
-import 'dart:io';
 import 'package:sqflite/sqflite.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+// import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 late SharedPreferences prefs;
@@ -22,11 +21,11 @@ class NotesDatabase {
       return _database!;
     }
 
-    if( Platform.isWindows || Platform.isLinux || Platform.isMacOS ) {
+    // if( Platform.isWindows || Platform.isLinux || Platform.isMacOS ) {
 
-      databaseFactory = databaseFactoryFfi;
+    //   databaseFactory = databaseFactoryFfi;
 
-    }
+    // }
 
     _database = await openDatabase(
       'notes.db',
@@ -63,6 +62,8 @@ class NotesDatabase {
   static Future<List<Map<String, dynamic>>> getAllNotes( {String searchQuery = "" }) async {
     final db = await _initDatabase();
 
+    searchQuery = searchQuery.trim();
+
     return await db.query(
       'notes',
       where: 'title like ? or body like ?',
@@ -85,10 +86,22 @@ class NotesDatabase {
     return queryResult;
   }
 
-  static void deleteEmpty( ) async {
+  static Future<int> deleteNotes( List<int> ids ) async {
 
     final db = await _initDatabase();
-    db.delete('notes' , where: 'title = "" and body = ""');
+
+    if( ids.isEmpty ) {
+      return 0;
+    }
+
+    return await db.delete('notes' , where: "id in (${ids.join(',')})");
+
+  }
+
+  static Future<int> deleteEmpty( ) async {
+
+    final db = await _initDatabase();
+    return await db.delete('notes' , where: 'title = "" and body = ""');
 
   }
 
