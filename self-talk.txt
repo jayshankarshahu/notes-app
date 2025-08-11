@@ -2,13 +2,13 @@ DO THINGS IN THE ORDER THEY ARE WRITTEN
 
 Version 1
 
-- Everytime the home page appears it should fetch from sqlite 
+- Everytime the home page appears it should fetch from sqlite ( done )
 
-- The edit page should expect an id of the note as a parameter and should fetch the rest of the info from sqlite
+- The edit page should expect an id of the note as a parameter and should fetch the rest of the info from sqlite (done)
 
-- If it's a new note it should send blank and it will insert and then keep updating the note
+- If it's a new note it should send blank and it will insert and then keep updating the note ( done )
 
-- Implement debouncing for it
+- Implement debouncing for it ( done )
  
 - In the home page there should be 
 
