@@ -184,6 +184,7 @@ class _NotesPageState extends State<NotesPage> {
               searchFocusNode.unfocus();
 
               setState(() {
+                hasSearchQueryChanged = true;
                 searchQuery = '';
                 searchEditingController.clear();
               });

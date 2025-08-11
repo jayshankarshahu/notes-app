@@ -181,8 +181,3 @@ class _EditNotePageState extends State<EditNotePage> {
     );
   }
 }
-android {
-    // ...other config...
-    ndkVersion = "27.0.12077973"
-    // ...other config...
-}
