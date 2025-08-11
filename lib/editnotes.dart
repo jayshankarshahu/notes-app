@@ -76,6 +76,8 @@ class _EditNotePageState extends State<EditNotePage> {
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: "What is it about?",
+                      hintStyle: TextStyle(color: Theme.of(context).hintColor),
+                      fillColor: Theme.of(context).colorScheme.surface
                     ),                    
                     onChanged: (value) {
 
@@ -95,7 +97,9 @@ class _EditNotePageState extends State<EditNotePage> {
                       decoration: InputDecoration(
                         border: InputBorder.none,
                         hintText: "What's on your mind?",
+                        hintStyle: TextStyle(color: Theme.of(context).hintColor),
                         alignLabelWithHint: true,
+                        fillColor: Theme.of(context).colorScheme.surface
                       ),
                       onChanged: (value) {
 

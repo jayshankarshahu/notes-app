@@ -60,10 +60,15 @@ class NotesDatabase {
     return _database!;
   }
 
-  static Future<List<Map<String, dynamic>>> getAllNotes() async {
+  static Future<List<Map<String, dynamic>>> getAllNotes( {String searchQuery = "" }) async {
     final db = await _initDatabase();
 
-    return await db.query('notes');
+    return await db.query(
+      'notes',
+      where: 'title like ? or body like ?',
+      whereArgs: [ "%$searchQuery%" , "%$searchQuery%" ],
+      orderBy: 'editedAt desc'
+    );
   }
 
   static Future<int> InsertEmptyNoteAndGetId( ) async {
