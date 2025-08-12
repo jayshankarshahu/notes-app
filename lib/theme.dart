@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 /// ===== Light Theme Colors =====
 const Color lightBackground = Color(0xFFFAFAFA);
 const Color lightSurface = Color(0xFFFFFFFF);
-const Color lightPrimaryText = Color(0xFF1A1A1A);
+const Color lightPrimaryText = Color.fromARGB(255, 0, 0, 0);
 const Color lightSecondaryText = Color(0xFF5C5C5C);
 const Color lightPrimaryAccent = Color(0xFF3B82F6);
 const Color lightSecondaryAccent = Color(0xFFF59E0B);
@@ -13,7 +13,7 @@ const Color lightWarning = Color(0xFFF59E0B);
 const Color lightError = Color(0xFFEF4444);
 
 /// ===== Dark Theme Colors =====
-const Color darkBackground = Color(0xFF121212);
+const Color darkBackground = Color.fromARGB(255, 0, 0, 0);
 const Color darkSurface = Color(0xFF1E1E1E);
 const Color darkPrimaryText = Color.fromARGB(255, 255, 255, 255);
 const Color darkSecondaryText = Color(0xFFA1A1A1);

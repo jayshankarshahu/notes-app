@@ -114,16 +114,22 @@ class _EditNotePageState extends State<EditNotePage> {
               return Column(
                 children: [
                   TextField(
-                    minLines: null,
+                    minLines: 1,
                     autocorrect: false,
                     controller: titleController,
-                    maxLines: 1,
+                    maxLines: 3,
                     decoration: InputDecoration(
                       border: InputBorder.none,
                       hintText: "What is it about?",
                       hintStyle: TextStyle(color: Theme.of(context).hintColor),
                       fillColor: Theme.of(context).colorScheme.surface,
+                      
                     ),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600
+                    ),
+                    
                     onChanged: (value) {
 
                       // setState(() {

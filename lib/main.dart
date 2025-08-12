@@ -5,15 +5,7 @@ import 'theme.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
-
-extension StringCasingExtension on String {
-  String capitalize() {
-    if (isEmpty) {
-      return this;
-    }
-    return '${this[0].toUpperCase()}${substring(1)}';
-  }
-}
+import 'helper_functions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -70,7 +62,6 @@ class _NotesPageState extends State<NotesPage> {
         if (!context.mounted) {
           return;
         }
-
       });
       notes = NotesDatabase.getAllNotes(searchQuery: searchQuery);
     });
@@ -119,10 +110,22 @@ class _NotesPageState extends State<NotesPage> {
         actions: [
           IconButton(
             onPressed: () {
+              shareNotes( List.from(selectedNotes) );
+            },
+            icon: Icon(Icons.share, color: Theme.of(context).hintColor),
+          ),
+          IconButton(
+            onPressed: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   return AlertDialog(
+                    contentPadding: EdgeInsets.only(top: 8 , bottom: 10),
+                    backgroundColor: Theme.of(context).colorScheme.onSurface,
+                    icon: Icon(
+                      Icons.delete_forever,
+                      color: Theme.of(context).hintColor,
+                    ),
                     title: Text(
                       'Are you sure?',
                       style: TextStyle(
@@ -131,10 +134,11 @@ class _NotesPageState extends State<NotesPage> {
                         color: Theme.of(context).textTheme.titleLarge?.color,
                         // fontFeatures: [FontFeature()]
                       ),
-                      textAlign: TextAlign.start,
+                      // textAlign: TextAlign.start,
                     ),
                     content: Text(
-                      "${selectedNotes.length.toString()} Note${selectedNotes.length == 1 ? "" : "s"} will be deleted.",
+                      "${selectedNotes.length.toString()} Note${selectedNotes.length == 1 ? "" : "s"} will be deleted",
+                      textAlign: TextAlign.center,
                     ),
                     actions: <Widget>[
                       TextButton(
@@ -150,19 +154,19 @@ class _NotesPageState extends State<NotesPage> {
                       ),
                       TextButton(
                         onPressed: () async {
+                          await NotesDatabase.deleteNotes(
+                            List.from(selectedNotes),
+                          );
 
-                          await NotesDatabase.deleteNotes(List.from(selectedNotes));
-                          
-                          if( context.mounted ) {
+                          if (context.mounted) {
                             Navigator.of(context).pop();
                           }
 
                           selectedNotes.clear();
-                          
-                          refreshPage();
 
+                          refreshPage();
                         },
-                        child: Text('OK'),
+                        child: Text('Delete'),
                       ),
                     ],
                   );
@@ -271,18 +275,24 @@ class _NotesPageState extends State<NotesPage> {
 
                       if (currentNote['title'].trim().isNotEmpty) {
                         cardChildren.add(
-                          Text(
-                            StringCasingExtension(
-                              currentNote['title'],
-                            ).capitalize().replaceAll(RegExp(r'\s+'), ' '),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              // fontFeatures: [FontFeature()]
+                          Container(
+                            margin: EdgeInsets.only(bottom: 8),
+                            child: Text(
+                              StringCasingExtension(
+                                currentNote['title'],
+                              ).capitalize().replaceAll(RegExp(r'\s+'), ' '),
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(
+                                  context,
+                                ).textTheme.bodyLarge!.color,
+                                // fontFeatures: [FontFeature()]
+                              ),
+                              textAlign: TextAlign.start,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
                             ),
-                            textAlign: TextAlign.start,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
                           ),
                         );
                       }
@@ -297,15 +307,30 @@ class _NotesPageState extends State<NotesPage> {
                         ),
                       );
 
+                      cardChildren.add(
+                        Container(
+                          margin: EdgeInsets.only(top: 10),
+                          child: Row(
+                            children: <Widget>[
+                              Spacer(), // This will push the following widget to the end
+                              Text(
+                                formatRelativeTime(currentNote['editedAt']),
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+
                       noteCards.add(
                         Card(
-                          color: Theme.of(context).cardTheme.color,
+                          color: Theme.of(context).scaffoldBackgroundColor,
                           shape: shape,
 
                           child: GestureDetector(
                             onTap: () => {
                               if (isSelectModeOn)
-                                {                                  
+                                {
                                   setState(() {
                                     if (selectedNotes.contains(
                                       currentNote['id'],

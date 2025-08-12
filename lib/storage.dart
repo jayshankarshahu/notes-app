@@ -7,7 +7,6 @@ late SharedPreferences prefs;
 const cacheTypeTitle = 'title';
 const cacheTypeBody = 'body';
 
-
 //keeping things static so that the function can be used globally across the app
 class NotesDatabase {
   static Database? _database;
@@ -40,26 +39,19 @@ class NotesDatabase {
               editedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
             );
         """);
-        db.execute("""
-            PRAGMA recursive_triggers = OFF;
-
-            CREATE TRIGGER update_editedAt
-            AFTER UPDATE ON notes
-            FOR EACH ROW
-            BEGIN
-                UPDATE notes
-                SET editedAt = strftime('%s', 'now')
-                WHERE id = OLD.id;
-            END;
-
-            """);
+      },
+      onOpen: (db) async {
+        // Remove the trigger if it exists (for upgrades)
+        await db.execute('DROP TRIGGER IF EXISTS update_editedAt;');
       },
     );
 
     return _database!;
   }
 
-  static Future<List<Map<String, dynamic>>> getAllNotes( {String searchQuery = "" }) async {
+  static Future<List<Map<String, dynamic>>> getAllNotes({
+    String searchQuery = "",
+  }) async {
     final db = await _initDatabase();
 
     searchQuery = searchQuery.trim();
@@ -67,45 +59,35 @@ class NotesDatabase {
     return await db.query(
       'notes',
       where: 'title like ? or body like ?',
-      whereArgs: [ "%$searchQuery%" , "%$searchQuery%" ],
-      orderBy: 'editedAt desc'
+      whereArgs: ["%$searchQuery%", "%$searchQuery%"],
+      orderBy: 'editedAt desc',
     );
   }
 
-  static Future<int> InsertEmptyNoteAndGetId( ) async {
+  static Future<int> InsertEmptyNoteAndGetId() async {
     final db = await _initDatabase();
 
-    final queryResult = await db.insert(
-      'notes',
-      { 
-        'title' : '',
-        'body' : ''
-      }
-    );
+    final queryResult = await db.insert('notes', {'title': '', 'body': ''});
 
     return queryResult;
   }
 
-  static Future<int> deleteNotes( List<int> ids ) async {
-
+  static Future<int> deleteNotes(List<int> ids) async {
     final db = await _initDatabase();
 
-    if( ids.isEmpty ) {
+    if (ids.isEmpty) {
       return 0;
     }
 
-    return await db.delete('notes' , where: "id in (${ids.join(',')})");
-
+    return await db.delete('notes', where: "id in (${ids.join(',')})");
   }
 
-  static Future<int> deleteEmpty( ) async {
-
+  static Future<int> deleteEmpty() async {
     final db = await _initDatabase();
-    return await db.delete('notes' , where: 'title = "" and body = ""');
-
+    return await db.delete('notes', where: 'title = "" and body = ""');
   }
 
-  static Future<Map<String, dynamic>?> getOneNote( id ) async {
+  static Future<Map<String, dynamic>?> getOneNote(id) async {
     final db = await _initDatabase();
 
     final queryResult = await db.query(
@@ -134,6 +116,10 @@ class NotesDatabase {
       updateValues['body'] = newBody;
     }
 
+    updateValues['editedAt'] = (DateTime.now().millisecondsSinceEpoch / 1000)
+        .round()
+        .toString();
+
     final updatedValue = await db.update(
       'notes',
       updateValues,
@@ -143,32 +129,35 @@ class NotesDatabase {
 
     return updatedValue == 1;
   }
+
+  static Future<String> getNoteStringToShare(List<int> noteIds) async {
+    final db = await _initDatabase();
+
+    var notes = await db.query('notes', columns: [ 'title || char(10) || body as content' ], where: "id in (${noteIds.join(',')})");
+
+    return notes.map((e) => e['content']).join("\n\n");
+
+  }
 }
 
-
-void saveNoteInCache( int id , String type , String value ) async {
-
+void saveNoteInCache(int id, String type, String value) async {
   final key = "draft-${id.toString()}-$type";
 
   prefs.setString(key, value);
-
 }
 
 Future<void> readCacheAndUpdateStorage() async {
-
   for (String key in prefs.getKeys()) {
-
     if (key.startsWith('draft-')) {
-      
       final keyElements = key.split('-');
 
-      if( keyElements.length != 3 ) {
+      if (keyElements.length != 3) {
         continue;
       }
 
       final id = int.tryParse(keyElements[1]);
 
-      if( id == null ) {
+      if (id == null) {
         continue;
       }
 
@@ -176,20 +165,13 @@ Future<void> readCacheAndUpdateStorage() async {
 
       final value = prefs.getString(key);
 
-      if( type == cacheTypeTitle ) {
-
-        await NotesDatabase.updateNote(id, value , null);
+      if (type == cacheTypeTitle) {
+        await NotesDatabase.updateNote(id, value, null);
         await prefs.remove(key);
-
-      } else if ( type == cacheTypeBody ) {
-
-        await NotesDatabase.updateNote(id, null , value);
+      } else if (type == cacheTypeBody) {
+        await NotesDatabase.updateNote(id, null, value);
         await prefs.remove(key);
-        
       }
-
     }
-
   }
-
 }
