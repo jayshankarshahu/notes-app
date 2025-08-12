@@ -13,9 +13,8 @@ A modern, cross-platform notes application built with Flutter.
   - All notes are saved locally using SQLite
   - Notes are auto-saved and changes are cached for reliability
 
-- **Search and Sort**
+- **Search**
   - Search notes by title or body text
-  - Sort notes by creation date or last edited date (ascending/descending)
 
 - **Pull-to-Refresh**
   - Pull down on the notes list to refresh and sync with the database
