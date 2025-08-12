@@ -1,16 +1,59 @@
-# notes
+# Notes App
 
-A new Flutter project.
+A modern, cross-platform notes application built with Flutter.
+
+## Features
+
+- **Create, Edit, and Delete Notes**
+  - Add new notes instantly
+  - Edit existing notes with undo/redo support
+  - Delete single or multiple notes with selection mode
+
+- **Persistent Storage**
+  - All notes are saved locally using SQLite
+  - Notes are auto-saved and changes are cached for reliability
+
+- **Search and Sort**
+  - Search notes by title or body text
+  - Sort notes by creation date or last edited date (ascending/descending)
+
+- **Pull-to-Refresh**
+  - Pull down on the notes list to refresh and sync with the database
+
+- **Undo/Redo Editing**
+  - Undo and redo changes while editing note content
+
+- **Multi-Select, Batch Delete, and Batch Share**
+  - Long-press to select multiple notes and delete them in one action
+  - Share multiple selected notes at once
+
+- **Responsive UI & Theming**
+  - Light and dark mode support
+  - Adaptive layout for mobile and desktop
+
+- **Custom App Icon & Splash Screen**
+  - Branded app icon and splash screen for a polished look
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+1. Clone this repository
+2. Run `flutter pub get`
+3. Run the app on your device or emulator: `flutter run`
 
-A few resources to get you started if this is your first Flutter project:
+## Build for Production
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Android APK:** `flutter build apk --release`
+- **Web:** `flutter build web --release`
+- **Linux/Windows:** `flutter build linux --release` or `flutter build windows --release`
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Dependencies
+- Flutter
+- sqflite
+- shared_preferences
+- fluttertoast
+- flutter_launcher_icons
+- flutter_native_splash
+
+---
+
+Feel free to contribute or open issues for suggestions and bug reports!
