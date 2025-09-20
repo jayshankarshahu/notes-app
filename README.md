@@ -2,6 +2,9 @@
 
 A modern, cross-platform notes application built with Flutter.
 
+## Installation
+[Click Here](https://github.com/jayshankarshahu/notes-app/releases/download/v1.0.0/app-release.apk) to download the APK
+
 ## Features
 
 - **Create, Edit, and Delete Notes**
